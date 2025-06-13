@@ -16,7 +16,7 @@ ARG VIM_VERSION=v7.2
 RUN wget https://github.com/vim/vim/archive/${VIM_VERSION}.tar.gz
 RUN tar xf ${VIM_VERSION}.tar.gz
 RUN cd vim-* && \
-        LDFLAGS="-static" ./configure \
+        vim_cv_terminfo=yes LDFLAGS="-static" ./configure \
         --disable-gtktest \
         --disable-gui \
         --disable-netbeans \
