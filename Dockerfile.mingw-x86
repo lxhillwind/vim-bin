@@ -1,20 +1,5 @@
 # vim:ft=dockerfile
 
-# build winpthreads working for Windows XP.
-FROM fedora:41 as winpthreads
-ARG ARCH=i686
-ARG MINGW_PREFIX=mingw32
-
-WORKDIR /root
-RUN dnf install -y gcc make ${MINGW_PREFIX}-gcc ${MINGW_PREFIX}-winpthreads
-
-RUN dnf install -y git
-RUN git clone https://github.com/lxhillwind/winpthreads
-RUN cd winpthreads && \
-    ./configure --prefix=/usr/i686-w64-mingw32 --host=i686-w64-mingw32 --enable-static CFLAGS='-D_WIN32_WINNT=0x0501' CC=i686-w64-mingw32-gcc && \
-    make && make install
-
-
 # specify architecture.
 FROM fedora:41
 ARG ARCH=i686
@@ -24,7 +9,6 @@ WORKDIR /root
 RUN dnf install -y gcc make ${MINGW_PREFIX}-gcc ${MINGW_PREFIX}-gcc-c++ ${MINGW_PREFIX}-winpthreads
 RUN dnf install -y p7zip p7zip-plugins curl
 
-COPY --from=winpthreads /usr/i686-w64-mingw32/sys-root/mingw/lib/libwinpthread.a /usr/i686-w64-mingw32/sys-root/mingw/lib/libwinpthread.a
 COPY legacy-icon.ico /tmp/vim.ico
 
 ARG VIM_VERSION=v7.2
