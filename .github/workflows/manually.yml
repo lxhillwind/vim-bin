@@ -10,10 +10,6 @@ on:
         description: 'why building this version manually (shown in release note)'
         required: false
         default: ''
-      skip_win32:
-        description: 'Make_cyg_ming.mak in early version vim needs tweak (1: skip; 0: build)'
-        required: false
-        default: 0
 
 jobs:
 
@@ -77,34 +73,28 @@ jobs:
 
     steps:
     - name: Checkout repo
-      if: ${{ github.event.inputs.skip_win32 == '0' }}
       uses: actions/checkout@v3
 
     - name: Download version
-      if: ${{ github.event.inputs.skip_win32 == '0' }}
       uses: actions/download-artifact@v4
       with:
         name: ver
 
     - name: Build the Docker image
-      if: ${{ github.event.inputs.skip_win32 == '0' }}
       run: docker build . --file Dockerfile.mingw-x86 --build-arg VIM_VERSION=$(cat latest.txt) --tag vim-build-win32-x86:$(cat latest.txt)
 
     - name: Generate artifacts
-      if: ${{ github.event.inputs.skip_win32 == '0' }}
       run: |
         docker run --rm -i vim-build-win32-x86:$(cat latest.txt) cat /out/vim-$(cat latest.txt).7z > vim-win32-x86.7z;
         docker run --rm -i vim-build-win32-x86:$(cat latest.txt) cat /out/vim-$(cat latest.txt).zip > vim-win32-x86.zip;
 
     - name: Upload binary
-      if: ${{ github.event.inputs.skip_win32 == '0' }}
       uses: actions/upload-artifact@v4
       with:
         name: vim-win32-x86
         path: vim-win32-x86.7z
 
     - name: Upload binary (zip)
-      if: ${{ github.event.inputs.skip_win32 == '0' }}
       uses: actions/upload-artifact@v4
       with:
         name: vim-win32-x86-zip
@@ -117,34 +107,28 @@ jobs:
 
     steps:
     - name: Checkout repo
-      if: ${{ github.event.inputs.skip_win32 == '0' }}
       uses: actions/checkout@v3
 
     - name: Download version
-      if: ${{ github.event.inputs.skip_win32 == '0' }}
       uses: actions/download-artifact@v4
       with:
         name: ver
 
     - name: Build the Docker image
-      if: ${{ github.event.inputs.skip_win32 == '0' }}
       run: docker build . --file Dockerfile.mingw-x64 --build-arg VIM_VERSION=$(cat latest.txt) --tag vim-build-win32-x64:$(cat latest.txt)
 
     - name: Generate artifacts
-      if: ${{ github.event.inputs.skip_win32 == '0' }}
       run: |
         docker run --rm -i vim-build-win32-x64:$(cat latest.txt) cat /out/vim-$(cat latest.txt).7z > vim-win32-x64.7z;
         docker run --rm -i vim-build-win32-x64:$(cat latest.txt) cat /out/vim-$(cat latest.txt).zip > vim-win32-x64.zip;
 
     - name: Upload binary
-      if: ${{ github.event.inputs.skip_win32 == '0' }}
       uses: actions/upload-artifact@v4
       with:
         name: vim-win32-x64
         path: vim-win32-x64.7z
 
     - name: Upload binary (zip)
-      if: ${{ github.event.inputs.skip_win32 == '0' }}
       uses: actions/upload-artifact@v4
       with:
         name: vim-win32-x64-zip
@@ -167,25 +151,21 @@ jobs:
         name: vim-linux
 
     - name: Download win32 (x86)
-      if: ${{ github.event.inputs.skip_win32 == '0' }}
       uses: actions/download-artifact@v4
       with:
         name: vim-win32-x86
 
     - name: Download win32 (x64)
-      if: ${{ github.event.inputs.skip_win32 == '0' }}
       uses: actions/download-artifact@v4
       with:
         name: vim-win32-x64
 
     - name: Download win32 (x86; zip)
-      if: ${{ github.event.inputs.skip_win32 == '0' }}
       uses: actions/download-artifact@v4
       with:
         name: vim-win32-x86-zip
 
     - name: Download win32 (x64; zip)
-      if: ${{ github.event.inputs.skip_win32 == '0' }}
       uses: actions/download-artifact@v4
       with:
         name: vim-win32-x64-zip
@@ -237,7 +217,6 @@ jobs:
         asset_content_type: application/x-tar
 
     - name: Upload Release Asset win32 (x86)
-      if: ${{ github.event.inputs.skip_win32 == '0' }}
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -248,7 +227,6 @@ jobs:
         asset_content_type: application/x-7z-compressed
 
     - name: Upload Release Asset win32 (x64)
-      if: ${{ github.event.inputs.skip_win32 == '0' }}
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -259,7 +237,6 @@ jobs:
         asset_content_type: application/x-7z-compressed
 
     - name: Upload Release Asset win32 (x86; zip)
-      if: ${{ github.event.inputs.skip_win32 == '0' }}
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -270,7 +247,6 @@ jobs:
         asset_content_type: application/x-zip-compressed
 
     - name: Upload Release Asset win32 (x64; zip)
-      if: ${{ github.event.inputs.skip_win32 == '0' }}
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

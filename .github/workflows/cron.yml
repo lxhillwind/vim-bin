@@ -71,13 +71,21 @@ jobs:
       run: docker build . --file Dockerfile.mingw-x86 --build-arg VIM_VERSION=$(cat latest.txt) --tag vim-build-win32-x86:$(cat latest.txt)
 
     - name: Generate artifacts
-      run: docker run --rm -i vim-build-win32-x86:$(cat latest.txt) cat /out/vim-$(cat latest.txt).7z > vim-win32-x86.7z
+      run: |
+        docker run --rm -i vim-build-win32-x86:$(cat latest.txt) cat /out/vim-$(cat latest.txt).7z > vim-win32-x86.7z;
+        docker run --rm -i vim-build-win32-x86:$(cat latest.txt) cat /out/vim-$(cat latest.txt).zip > vim-win32-x86.zip;
 
     - name: Upload binary
       uses: actions/upload-artifact@v4
       with:
         name: vim-win32-x86
         path: vim-win32-x86.7z
+
+    - name: Upload binary (zip)
+      uses: actions/upload-artifact@v4
+      with:
+        name: vim-win32-x86-zip
+        path: vim-win32-x86.zip
 
   build-win32-x64:
 
@@ -97,13 +105,21 @@ jobs:
       run: docker build . --file Dockerfile.mingw-x64 --build-arg VIM_VERSION=$(cat latest.txt) --tag vim-build-win32-x64:$(cat latest.txt)
 
     - name: Generate artifacts
-      run: docker run --rm -i vim-build-win32-x64:$(cat latest.txt) cat /out/vim-$(cat latest.txt).7z > vim-win32-x64.7z
+      run: |
+        docker run --rm -i vim-build-win32-x64:$(cat latest.txt) cat /out/vim-$(cat latest.txt).7z > vim-win32-x64.7z;
+        docker run --rm -i vim-build-win32-x64:$(cat latest.txt) cat /out/vim-$(cat latest.txt).zip > vim-win32-x64.zip;
 
     - name: Upload binary
       uses: actions/upload-artifact@v4
       with:
         name: vim-win32-x64
         path: vim-win32-x64.7z
+
+    - name: Upload binary (zip)
+      uses: actions/upload-artifact@v4
+      with:
+        name: vim-win32-x64-zip
+        path: vim-win32-x64.zip
 
   release:
 
@@ -131,16 +147,28 @@ jobs:
       with:
         name: vim-win32-x64
 
+    - name: Download win32 (x86; zip)
+      uses: actions/download-artifact@v4
+      with:
+        name: vim-win32-x86-zip
+
+    - name: Download win32 (x64; zip)
+      uses: actions/download-artifact@v4
+      with:
+        name: vim-win32-x64-zip
+
     - name: Set version
       id: latest-ver-get
-      run: printf '::set-output name=latest::%s\n' $(cat latest.txt)
+      run: printf 'latest=%s\n' $(cat latest.txt) >> $GITHUB_OUTPUT
 
     - name: Checksum
       id: checksum
       run: |
-        printf '::set-output name=linux-x64::%s\n' $(sha256sum vim-linux-x64.tar.xz | cut -d' ' -f1);
-        printf '::set-output name=win32-x86::%s\n' $([ -f vim-win32-x86.7z ] && { sha256sum vim-win32-x86.7z | cut -d' ' -f1; } || echo 'empty');
-        printf '::set-output name=win32-x64::%s\n' $([ -f vim-win32-x64.7z ] && { sha256sum vim-win32-x64.7z | cut -d' ' -f1; } || echo 'empty');
+        printf 'linux-x64=%s\n' $(sha256sum vim-linux-x64.tar.xz | cut -d' ' -f1) >> $GITHUB_OUTPUT;
+        printf 'win32-x86=%s\n' $([ -f vim-win32-x86.7z ] && { sha256sum vim-win32-x86.7z | cut -d' ' -f1; } || echo 'empty') >> $GITHUB_OUTPUT;
+        printf 'win32-x64=%s\n' $([ -f vim-win32-x64.7z ] && { sha256sum vim-win32-x64.7z | cut -d' ' -f1; } || echo 'empty') >> $GITHUB_OUTPUT;
+        printf 'win32-x86-zip=%s\n' $([ -f vim-win32-x86.zip ] && { sha256sum vim-win32-x86.zip | cut -d' ' -f1; } || echo 'empty') >> $GITHUB_OUTPUT;
+        printf 'win32-x64-zip=%s\n' $([ -f vim-win32-x64.zip ] && { sha256sum vim-win32-x64.zip | cut -d' ' -f1; } || echo 'empty') >> $GITHUB_OUTPUT;
 
     - name: Create Release
       id: create_release
@@ -160,6 +188,10 @@ jobs:
           - `${{ steps.checksum.outputs.linux-x64 }}  vim-${{ steps.latest-ver-get.outputs.latest }}-linux-x64.tar.xz`
           - `${{ steps.checksum.outputs.win32-x86 }}  vim-${{ steps.latest-ver-get.outputs.latest }}-win32-x86.7z` (compiled for Windows XP; **USE AT YOUR OWN RISK!**)
           - `${{ steps.checksum.outputs.win32-x64 }}  vim-${{ steps.latest-ver-get.outputs.latest }}-win32-x64.7z`
+          - `${{ steps.checksum.outputs.win32-x86-zip }}  vim-${{ steps.latest-ver-get.outputs.latest }}-win32-x86.zip` (compiled for Windows XP; **USE AT YOUR OWN RISK!**)
+          - `${{ steps.checksum.outputs.win32-x64-zip }}  vim-${{ steps.latest-ver-get.outputs.latest }}-win32-x64.zip`
+
+          (`*.7z` and `*.zip` only differ in compression method and archive size.)
 
     - name: Upload Release Asset linux
       uses: actions/upload-release-asset@v1
@@ -190,3 +222,23 @@ jobs:
         asset_path: ./vim-win32-x64.7z
         asset_name: vim-${{ steps.latest-ver-get.outputs.latest }}-win32-x64.7z
         asset_content_type: application/x-7z-compressed
+
+    - name: Upload Release Asset win32 (x86; zip)
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+        asset_path: ./vim-win32-x86.zip
+        asset_name: vim-${{ steps.latest-ver-get.outputs.latest }}-win32-x86.zip
+        asset_content_type: application/x-zip-compressed
+
+    - name: Upload Release Asset win32 (x64; zip)
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+        asset_path: ./vim-win32-x64.zip
+        asset_name: vim-${{ steps.latest-ver-get.outputs.latest }}-win32-x64.zip
+        asset_content_type: application/x-zip-compressed
