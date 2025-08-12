@@ -44,5 +44,7 @@ RUN cd vim-*/src && \
 RUN cp -r vim-*/runtime /out/vim
 
 RUN cd /out && 7z a vim-${VIM_VERSION}.7z vim
+RUN cd /out && 7z a vim-${VIM_VERSION}.zip vim
 
 RUN echo 'run `docker run --rm -i NAME-OF-THIS-IMAGE cat /out/vim-${VIM_VERSION}.7z > OUTPUT-FILENAME.7z` to get result file.'
+RUN echo 'run `docker run --rm -i NAME-OF-THIS-IMAGE cat /out/vim-${VIM_VERSION}.zip > OUTPUT-FILENAME.zip` to get result file.'
