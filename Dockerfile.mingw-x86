@@ -35,6 +35,7 @@ RUN cd vim-*/src && \
         sed -i '1 i#define MOUSE_HWHEELED 0x8  /* only defined for NT6.0+ */' os_win32.c && \
         printf '%s\n%s\n%s\n%s\n' '#ifdef _WIN32' 'int is_cygpty(int fd) { return 0; }' 'int is_cygpty_used(void) { return 0; }' '#endif' > iscygpty.c && \
         sed -i '1 i#define wcscpy_s(a, b, c) ;' os_mswin.c && \
+        sed -i -E '/^DEFINES \+= -DHAVE_INET_NTOP$/d' Make_cyg_ming.mak && \
         sed -i -E 's/^.*-lstdc.*/LIB += -static-libstdc++ -static-libgcc/' Make_cyg_ming.mak; \
     fi; } && \
         env VIMDLL=yes WINVER=$(if [ "$ARCH" = i686 ]; then echo 0x0501; else echo 0x0601; fi) ARCH=$(echo $ARCH | tr _ -) CROSS_COMPILE=$ARCH-w64-mingw32- STATIC_STDCPLUS=yes STATIC_WINPTHREAD=yes \
