@@ -1,7 +1,7 @@
 # vim:ft=dockerfile
 
 # specify architecture.
-FROM fedora:41
+FROM fedora
 ARG ARCH=i686
 ARG MINGW_PREFIX=mingw32
 
