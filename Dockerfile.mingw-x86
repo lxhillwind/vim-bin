@@ -32,6 +32,8 @@ RUN cd vim-*/src && \
         sed -i '1 i#define GetFinalPathNameByHandleW(a, b, c, d) 0' os_mswin.c && \
         sed -i '1 i#define GetConsoleScreenBufferInfoEx(a, b) ;' os_win32.c && \
         sed -i '1 i#define SetConsoleScreenBufferInfoEx(a, b) ;' os_win32.c && \
+        sed -i 's/GetCurrentConsoleFontEx/XP_Not_Support_GetCurrentConsoleFontEx/g' os_win32.c && \
+        sed -i '1 i#define XP_Not_Support_GetCurrentConsoleFontEx(a, b, c) 0' os_win32.c && \
         sed -i '1 i#define MOUSE_HWHEELED 0x8  /* only defined for NT6.0+ */' os_win32.c && \
         printf '%s\n%s\n%s\n%s\n' '#ifdef _WIN32' 'int is_cygpty(int fd) { return 0; }' 'int is_cygpty_used(void) { return 0; }' '#endif' > iscygpty.c && \
         sed -i '1 i#define wcscpy_s(a, b, c) ;' os_mswin.c && \
